@@ -1,21 +1,27 @@
 package com.capstone.tele_ticketing_backend_1.entities;
 
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "users") // The table name in the DB remains "users"
-@Data
+@Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id") // This line prevents the infinite loop.
 public class AppUser {
 
     @Id
@@ -26,37 +32,46 @@ public class AppUser {
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @Column(length = 100)
+    private String city;
+
+    @Column(length = 100)
+    private String state;
+
+    @Column(length = 20)
+    private String postalCode;
+
+    @Column(precision = 10, scale = 6)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 6)
+    private BigDecimal longitude;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     @ToString.Exclude
     private Set<Role> roles = new HashSet<>();
 
-
-    // Self-referencing ManyToMany for team structure
-    @ManyToMany
-    @JoinTable(
-            name = "team_memberships",
-            joinColumns = @JoinColumn(name = "member_id"),
-            inverseJoinColumns = @JoinColumn(name = "team_lead_id")
-    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    @JsonBackReference("team-members")
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<AppUser> teamLeads = new HashSet<>();
+    private Team team;
 
-    @ManyToMany(mappedBy = "teamLeads")
+    @OneToOne(mappedBy = "teamLead", fetch = FetchType.LAZY)
+    @JsonBackReference("team-lead")
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Set<AppUser> teamMembers = new HashSet<>();
+    private Team ledTeam;
 
-    // A user can be assigned to many tickets as an engineer
-    @ManyToMany(mappedBy = "assignedEngineers")
+    @ManyToMany(mappedBy = "assignedTo")
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private Set<Ticket> assignedTickets = new HashSet<>();
 
     @CreationTimestamp
@@ -67,7 +82,7 @@ public class AppUser {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public AppUser(String username, String password, String fullName ){
+    public AppUser(String username, String password, String fullName) {
         this.username = username;
         this.password = password;
         this.fullName = fullName;

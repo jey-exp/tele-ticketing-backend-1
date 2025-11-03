@@ -18,6 +18,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity 
@@ -55,28 +61,57 @@ public class WebSecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	public final static String[] PUBLIC_REQUEST_MATCHERS = { "/api/test/all","/api/auth/**", "/api-docs/**", "/swagger-ui/**","/v3/api-docs/**" };
+	public final static String[] PUBLIC_REQUEST_MATCHERS = { "/api/test/all","/api/v1/auth/**", "/api-docs/**", "/swagger-ui/**","/v3/api-docs/**" };
 
+	// In your SecurityConfig class
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		//http.cors(AbstractHttpConfigurer :: disable).csrf(AbstractHttpConfigurer::disable)
-		http.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(req -> req.requestMatchers(PUBLIC_REQUEST_MATCHERS).permitAll()
-						//.requestMatchers("/api/toyandbooklibapp/**").permitAll())
-						.requestMatchers("/api/toyandbooklibapp/user").hasAnyRole("USER", "ADMIN")
-						.requestMatchers("/api/toyandbooklibapp/child").hasAnyRole("USER","CHILD")
-						.requestMatchers("/api/toyandbooklibapp/parent").hasRole("PARENT")
-								.requestMatchers("/greet").hasRole("CUSTOMER")
-						.requestMatchers("/api/test/user").hasRole("USER")
-						.requestMatchers("/api/test/parent").hasRole("PARENT")
-						.requestMatchers("/api/test/admin").hasRole("ADMIN")
-						)
-				
-						//.anyRequest().authenticated())http://localhost:8080/api/test/
-				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authenticationProvider(authenticationProvider())
-				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+		http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.csrf(AbstractHttpConfigurer::disable)
+				// Dr. X's Note: We are defining the authorization rules here.
+				.authorizeHttpRequests(auth -> auth.
+						requestMatchers(PUBLIC_REQUEST_MATCHERS).permitAll()
+						.requestMatchers("/api/v1/customer/**").hasRole("CUSTOMER")
+						.requestMatchers("/api/v1/agent/**").hasRole("AGENT")
+						.requestMatchers("/api/v1/triage/**").hasRole("TRIAGE_OFFICER")
+						.requestMatchers("/api/v1/engineer/**").hasAnyRole("L1_ENGINEER", "NOC_ENGINEER", "FIELD_ENGINEER")
+						.requestMatchers("/api/v1/users/engineers").hasRole("TRIAGE_OFFICER")
+						.requestMatchers("/api/v1/tickets/**").authenticated()
+						.requestMatchers("/api/v1/users/customers").hasRole("AGENT")
+
+						.requestMatchers("/api/v1/team-lead/**").hasRole("TEAM_LEAD")
+						.requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
+						.requestMatchers("/api/v1/teams/**").hasRole("MANAGER")
+						.requestMatchers("/api/v1/users/cities").hasRole("MANAGER")
+
+						.anyRequest().authenticated()
+				)
+						.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+						.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+						.authenticationProvider(authenticationProvider())
+						.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
 		return http.build();
+	}
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+
+		// Rule 1: Allow requests from your React app's origin.
+		configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+
+		// Rule 2: Allow standard HTTP methods.
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+		// Rule 3: THIS IS THE MOST IMPORTANT PART.
+		// You must explicitly allow the 'Authorization' and 'Content-Type' headers.
+		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+
+		// Rule 4: Allow credentials (cookies, etc.) if needed in the future.
+		configuration.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration); // Apply this configuration to all paths.
+		return source;
 	}
 }

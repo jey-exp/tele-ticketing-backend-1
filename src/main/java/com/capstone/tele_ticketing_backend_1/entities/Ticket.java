@@ -1,5 +1,7 @@
 package com.capstone.tele_ticketing_backend_1.entities;
 
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,76 +24,82 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ticket_uid", unique = true, length = 50)
+    @Column(name = "ticket_uid", unique = true, length = 50, updatable = false)
     private String ticketUid;
 
     @Column(nullable = false)
     private String title;
 
-    @Lob // Specifies that this should be mapped to a large object type in the DB
+    @Lob
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50, nullable = false)
+    private TicketStatus status;
+
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String status;
+    private TicketPriority priority;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private String priority;
+    private TicketSeverity severity;
 
-    @Column(length = 50)
-    private String severity;
-
-    @Column(nullable = false)
-    private String category;
-
-    @Column(name = "sub_category", nullable = false)
-    private String subCategory;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private TicketCategory category;
 
     @Column(name = "sla_duration_hours")
     private Integer slaDurationHours;
 
+    @Column(name = "sla_breach_at")
+    private LocalDateTime slaBreachAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private AppUser customer;
+    @JoinColumn(name = "created_for_user_id", nullable = false)
+    private AppUser createdFor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private AppUser createdBy;
 
-    // Relationship to assigned engineers (many-to-many)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_by_user_id")
+    private AppUser assignedBy;
+
     @ManyToMany
     @JoinTable(
             name = "ticket_assignments",
             joinColumns = @JoinColumn(name = "ticket_id"),
-            inverseJoinColumns = @JoinColumn(name = "engineer_id")
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Set<AppUser> assignedEngineers = new HashSet<>();
+    private Set<AppUser> assignedTo = new HashSet<>();
 
-    // Relationship to activities (one-to-many)
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private Set<TicketActivity> activities = new HashSet<>();
 
-    // Relationship to attachments (one-to-many)
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private Set<Attachment> attachments = new HashSet<>();
 
-    // Relationship to feedback (one-to-one)
     @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private Feedback feedback;
-
-    @Column(name = "issue_date")
-    private LocalDateTime issueDate;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+
 
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -100,10 +108,13 @@ public class Ticket {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-    @PostPersist
-    private void onPostPersist() {
+    @PrePersist
+    private void onPrePersist() {
         if (this.ticketUid == null) {
-            this.ticketUid = "TK" + (this.id + 1000);
+            this.ticketUid = "TK-" + System.currentTimeMillis();
+        }
+        if (this.status == null) {
+            this.status = TicketStatus.CREATED;
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.capstone.tele_ticketing_backend_1.entities;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +20,7 @@ public class Feedback {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false)
+    @JsonBackReference
     private Ticket ticket;
 
     @ManyToOne(fetch = FetchType.LAZY)

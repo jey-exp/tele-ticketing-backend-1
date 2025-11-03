@@ -1,9 +1,11 @@
 package com.capstone.tele_ticketing_backend_1.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,9 +20,10 @@ public class Attachment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false)
+    @JsonBackReference
     private Ticket ticket;
 
-    @Column(name = "file_path", nullable = false, unique = true)
+    @Column(name = "file_path", nullable = false)
     private String filePath;
 
     @Column(name = "file_name", nullable = false)

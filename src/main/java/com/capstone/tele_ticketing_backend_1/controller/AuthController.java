@@ -1,14 +1,10 @@
 package com.capstone.tele_ticketing_backend_1.controller;
 
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.capstone.tele_ticketing_backend_1.entities.AppUser;
-import com.capstone.tele_ticketing_backend_1.entities.ERole;
-import com.capstone.tele_ticketing_backend_1.entities.Role;
+import com.capstone.tele_ticketing_backend_1.dto.Coordinates;
+import com.capstone.tele_ticketing_backend_1.entities.*;
+import com.capstone.tele_ticketing_backend_1.exceptions.RoleNotFoundException;
+import com.capstone.tele_ticketing_backend_1.exceptions.UserAlreadyExistsException;
 import com.capstone.tele_ticketing_backend_1.repo.RoleRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 import com.capstone.tele_ticketing_backend_1.security.jwt.JwtUtils;
@@ -17,6 +13,8 @@ import com.capstone.tele_ticketing_backend_1.security.payload.request.SignupRequ
 import com.capstone.tele_ticketing_backend_1.security.payload.response.JwtResponse;
 import com.capstone.tele_ticketing_backend_1.security.payload.response.MessageResponse;
 import com.capstone.tele_ticketing_backend_1.security.service.UserDetailsImpl;
+import com.capstone.tele_ticketing_backend_1.service.GeocodingService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,19 +23,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:8080", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
+
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -53,139 +50,136 @@ public class AuthController {
 	@Autowired
 	JwtUtils jwtUtils;
 
-	@PostMapping("/signin")
-	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+	@Autowired
+	GeocodingService geocodingService;
 
+	@PostMapping("/signin")
+	public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-						loginRequest.getPassword()));
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+		);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
-
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> roles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-		String firstAuthority = userDetails.getAuthorities().stream()
-				.findFirst()
-				.map(GrantedAuthority::getAuthority)
-				.map(this::mapRoleToFrontend)
-				.orElse(null);
 
+		List<String> roles = userDetails.getAuthorities().stream()
+				.map(GrantedAuthority::getAuthority)
+				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(new JwtResponse(jwt,
 				userDetails.getId(),
 				userDetails.getUsername(),
-				firstAuthority
-				));
+				roles.toString()
+		));
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-		System.out.println("Signup request : " + signUpRequest);
+	public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Username is already taken!"));
+			throw new UserAlreadyExistsException("Error: Username is already taken!");
 		}
 
-		// Create new user's account
-		AppUser user = new AppUser(signUpRequest.getUsername(),
-				encoder.encode(signUpRequest.getPassword()), signUpRequest.getFullname());
+		AppUser user = new AppUser(
+				signUpRequest.getUsername(),
+				encoder.encode(signUpRequest.getPassword()),
+				signUpRequest.getFullname()
+		);
+
+		// Set location fields and geocode the address
+		user.setCity(signUpRequest.getCity());
+		user.setState(signUpRequest.getState());
+		user.setPostalCode(signUpRequest.getPostalCode());
+
+		if (signUpRequest.getCity() != null && signUpRequest.getPostalCode() != null) {
+			Coordinates coords = geocodingService.getCoordinates(
+					signUpRequest.getCity(),
+					signUpRequest.getState(),
+					signUpRequest.getPostalCode()
+			);
+			if (coords != null) {
+				user.setLatitude(coords.latitude());
+				user.setLongitude(coords.longitude());
+			}
+		}
 
 		Set<String> strRoles = signUpRequest.getRole();
 		Set<Role> roles = new HashSet<>();
+
+		if (strRoles == null || strRoles.isEmpty()) {
+			throw new RoleNotFoundException("Error: Role must be provided.");
+		}
 
 		strRoles.forEach(role -> {
 			switch (role) {
 				case "customer": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_CUSTOMER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'CUSTOMER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'CUSTOMER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "agent": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_AGENT)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'AGENT' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'AGENT' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "triage_officer": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_TRIAGE_OFFICER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'TRIAGE_OFFICER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'TRIAGE_OFFICER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "field_engineer": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_FIELD_ENGINEER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'FIELD_ENGINEER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'FIELD_ENGINEER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "noc_engineer": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_NOC_ENGINEER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'NOC_ENGINEER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'NOC_ENGINEER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "l1_engineer": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_L1_ENGINEER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'L1_ENGINEER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'L1_ENGINEER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "manager": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_MANAGER)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'MANAGER' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'MANAGER' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "team_lead": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_TEAM_LEAD)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'TEAM_LEAD' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'TEAM_LEAD' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "cxo": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_CXO)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'CXO' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'CXO' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				case "noc_admin": {
 					Role foundRole = roleRepository.findByName(ERole.ROLE_NOC_ADMIN)
-							.orElseThrow(() -> new RuntimeException("Error: Role 'NOC_ADMIN' is not found."));
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'NOC_ADMIN' is not found."));
 					roles.add(foundRole);
 					break;
 				}
 				default:
-					// Handles any role string that doesn't match a case
-					throw new RuntimeException("Error: Invalid role specified: " + role);
+					throw new RoleNotFoundException("Error: Invalid role specified: " + role);
 			}
 		});
 
 		user.setRoles(roles);
-		//saving UserEntity to the database
 		userRepository.save(user);
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
-
-	private String mapRoleToFrontend(String backendRole) {
-		switch (backendRole) {
-			case "ROLE_CUSTOMER": return "Customer";
-			case "ROLE_AGENT": return "Agent";
-			case "ROLE_TRIAGE_OFFICER": return "Triage Officer";
-			case "ROLE_FIELD_ENGINEER": return "Field Engineer";
-			case "ROLE_NOC_ENGINEER": return "NOC Engineer";
-			case "ROLE_L1_ENGINEER": return "L1 Engineer";
-			case "ROLE_TEAM_LEAD": return "Team Lead";
-			case "ROLE_MANAGER": return "Manager";
-			case "ROLE_CXO": return "CXO";
-			case "ROLE_NOC_ADMIN": return "NOC Admin";
-			default: return backendRole; // fallback if unknown
-		}
-	}
-
 }
