@@ -24,9 +24,11 @@ import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserSignupRequestRepo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminService {
 
     private final UserSignupRequestRepo signupRequestRepo;

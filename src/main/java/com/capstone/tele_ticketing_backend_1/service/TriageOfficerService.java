@@ -21,9 +21,11 @@ import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TriageOfficerService {
 
     private final TicketRepo ticketRepo;

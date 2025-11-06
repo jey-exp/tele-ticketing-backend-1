@@ -1,5 +1,6 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
+
 import com.capstone.tele_ticketing_backend_1.dto.ActivityLogDto;
 import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.*;
@@ -8,6 +9,7 @@ import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ActivityLogService {
 
     private final TicketActivityRepo activityRepo;
@@ -26,6 +29,8 @@ public class ActivityLogService {
      */
     @Transactional
     public void createLog(Ticket ticket, AppUser user, ActivityType type, String description, boolean isInternal) {
+        log.debug("Creating activity log for ticket {} by user {}: {} (internal: {})", 
+                ticket.getTicketUid(), user.getUsername(), description, isInternal);
         TicketActivity log = new TicketActivity();
         log.setTicket(ticket);
         log.setUser(user);

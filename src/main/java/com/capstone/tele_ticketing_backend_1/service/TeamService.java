@@ -13,9 +13,11 @@ import com.capstone.tele_ticketing_backend_1.entities.Team;
 import com.capstone.tele_ticketing_backend_1.repo.TeamRepo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamService {
 
     private final TeamRepo teamRepo;
@@ -23,9 +25,12 @@ public class TeamService {
     @Transactional(readOnly = true)
     // Dr. X's Fix: Change the return type to a list of DTOs.
     public List<TeamSummaryDto> getAllTeams() {
-        return teamRepo.findAll().stream()
+        log.info("Fetching all teams");
+        List<TeamSummaryDto> teams = teamRepo.findAll().stream()
                 .map(this::mapTeamToSummaryDto)
                 .collect(Collectors.toList());
+        log.debug("Found {} teams", teams.size());
+        return teams;
     }
 
     // Dr. X's Fix: Create a helper method to perform the mapping.

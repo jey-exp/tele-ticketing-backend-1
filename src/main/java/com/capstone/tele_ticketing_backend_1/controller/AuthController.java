@@ -40,11 +40,13 @@ import com.capstone.tele_ticketing_backend_1.service.GeocodingService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @CrossOrigin(origins = "http://localhost:8080", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
 	private final AuthenticationManager authenticationManager;
@@ -57,6 +59,7 @@ public class AuthController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+		log.info("Authentication attempt for user: {}", loginRequest.getUsername());
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
 		);
@@ -69,6 +72,7 @@ public class AuthController {
 				.map(GrantedAuthority::getAuthority)
 				.collect(Collectors.toList());
 
+		log.info("Successful authentication for user: {} with roles: {}", loginRequest.getUsername(), roles);
 		return ResponseEntity.ok(new JwtResponse(jwt,
 				userDetails.getId(),
 				userDetails.getUsername(),
@@ -78,7 +82,9 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+		log.info("User registration attempt for username: {}", signUpRequest.getUsername());
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+			log.warn("Registration failed - username already exists: {}", signUpRequest.getUsername());
 			throw new UserAlreadyExistsException("Error: Username is already taken!");
 		}
 

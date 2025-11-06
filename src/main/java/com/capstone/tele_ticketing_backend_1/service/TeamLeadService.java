@@ -31,9 +31,11 @@ import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeamLeadService {
 
     private final UserRepo userRepo;
@@ -44,23 +46,28 @@ public class TeamLeadService {
 
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> getActiveTeamTickets(String teamLeadUsername) {
+        log.info("Fetching active team tickets for team lead: {}", teamLeadUsername);
         Team team = findTeamByLead(teamLeadUsername);
         List<TicketStatus> activeStatuses = List.of(TicketStatus.ASSIGNED, TicketStatus.IN_PROGRESS);
         List<Ticket> tickets = ticketRepo.findTicketsByTeamAndStatus(team.getId(), activeStatuses);
+        log.debug("Found {} active tickets for team: {}", tickets.size(), team.getName());
         return tickets.stream().map(this::mapTicketToSummaryDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> getSlaRiskTeamTickets(String teamLeadUsername) {
+        log.info("Fetching SLA risk tickets for team lead: {}", teamLeadUsername);
         Team team = findTeamByLead(teamLeadUsername);
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime twoHoursFromNow = now.plusHours(2);
         List<Ticket> tickets = ticketRepo.findSlaRiskTicketsByTeam(team.getId(), now, twoHoursFromNow);
+        log.warn("Found {} SLA risk tickets for team: {}", tickets.size(), team.getName());
         return tickets.stream().map(this::mapTicketToSummaryDto).collect(Collectors.toList());
     }
 
     @Transactional
     public TicketDetailDto reassignTicket(Long ticketId, ReassignTicketDto dto, String teamLeadUsername) {
+        log.info("Team lead {} attempting to reassign ticket {}", teamLeadUsername, ticketId);
         Team team = findTeamByLead(teamLeadUsername);
         AppUser teamLead = team.getTeamLead();
         Ticket ticket = ticketRepo.findById(ticketId).orElseThrow(() -> new TicketNotFoundException("Ticket not found"));
@@ -68,6 +75,7 @@ public class TeamLeadService {
         // Security Check 1: Ensure the ticket belongs to the team lead's team.
         boolean ticketBelongsToTeam = ticket.getAssignedTo().stream().anyMatch(user -> user.getTeam() != null && user.getTeam().getId().equals(team.getId()));
         if (!ticketBelongsToTeam) {
+            log.warn("Unauthorized reassignment attempt by team lead {} for ticket {}", teamLeadUsername, ticketId);
             throw new AuthorizationException("You can only reassign tickets within your own team.");
         }
 
@@ -84,6 +92,7 @@ public class TeamLeadService {
         Ticket savedTicket = ticketRepo.save(ticket);
 
         String newAssigneesNames = newAssignees.stream().map(AppUser::getFullName).collect(Collectors.joining(", "));
+        log.info("Successfully reassigned ticket {} from [{}] to [{}]", ticketId, oldAssignees, newAssigneesNames);
         activityLogService.createLog(savedTicket, teamLead, ActivityType.ASSIGNMENT, "Re-assigned from [" + oldAssignees + "] to [" + newAssigneesNames + "]", true);
 
         return ticketService.mapTicketToDetailDto(savedTicket);
