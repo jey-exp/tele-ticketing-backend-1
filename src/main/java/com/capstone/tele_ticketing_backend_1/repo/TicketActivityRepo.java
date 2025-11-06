@@ -1,5 +1,6 @@
 package com.capstone.tele_ticketing_backend_1.repo;
 
+import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
 import com.capstone.tele_ticketing_backend_1.entities.AppUser;
 import com.capstone.tele_ticketing_backend_1.entities.TicketActivity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,7 @@ public interface TicketActivityRepo extends JpaRepository<TicketActivity, Long> 
 
     // Finds all public activities for tickets CREATED BY a specific user, ordered by most recent.
     List<TicketActivity> findAllByTicket_CreatedByAndInternalOnlyFalseOrderByCreatedAtDesc(AppUser user);
+
+    List<TicketActivity> findAllByActivityTypeAndInternalOnlyTrueOrderByCreatedAtDesc(ActivityType activityType);
+    List<TicketActivity> findAllByActivityTypeInOrderByCreatedAtDesc(List<ActivityType> activityTypes);
 }

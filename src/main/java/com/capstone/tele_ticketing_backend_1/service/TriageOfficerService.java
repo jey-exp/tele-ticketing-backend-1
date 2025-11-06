@@ -7,22 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.capstone.tele_ticketing_backend_1.dto.*;
+import com.capstone.tele_ticketing_backend_1.entities.*;
+import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.capstone.tele_ticketing_backend_1.ai.TriageAssistant;
-import com.capstone.tele_ticketing_backend_1.dto.AiTriageSuggestionDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
-import com.capstone.tele_ticketing_backend_1.dto.TriageSuggestion;
-import com.capstone.tele_ticketing_backend_1.dto.TriageTicketRequestDto;
-import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
-import com.capstone.tele_ticketing_backend_1.entities.AppUser;
-import com.capstone.tele_ticketing_backend_1.entities.ERole;
-import com.capstone.tele_ticketing_backend_1.entities.Ticket;
-import com.capstone.tele_ticketing_backend_1.entities.TicketPriority;
-import com.capstone.tele_ticketing_backend_1.entities.TicketSeverity;
-import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
 import com.capstone.tele_ticketing_backend_1.exceptions.InvalidTicketStatusException;
 import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
@@ -40,6 +31,7 @@ public class TriageOfficerService {
     private final TicketService ticketService;
     private final ActivityLogService activityLogService;
     private final TriageAssistant triageAssistant;
+    private final TicketActivityRepo activityRepo;
 
     // Defines which statuses are considered "pending" for a Triage Officer.
     private static final List<TicketStatus> PENDING_STATUSES = List.of(
@@ -168,5 +160,35 @@ public class TriageOfficerService {
         dto.setSuggestedSeverity(TicketSeverity.TRIVIAL);
         dto.setSuggestedRole(ERole.ROLE_L1_ENGINEER);
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationDto> getNotifications() {
+        // Define the list of types you want to see
+        List<ActivityType> relevantTypes = List.of(
+                ActivityType.STATUS_CHANGE,
+                ActivityType.PRIORITY_CHANGE,
+                ActivityType.ASSIGNMENT,
+                ActivityType.REOPENED
+        );
+
+        // Call the new repository method
+        List<TicketActivity> activities = activityRepo
+                .findAllByActivityTypeInOrderByCreatedAtDesc(relevantTypes);
+
+        return activities.stream()
+                .map(this::mapActivityToNotificationDto)
+                .collect(Collectors.toList());
+    }
+
+    private NotificationDto mapActivityToNotificationDto(TicketActivity activity) {
+        return new NotificationDto(
+                activity.getId(),
+                activity.getTicket().getTicketUid(),
+                activity.getTicket().getTitle(),
+                activity.getDescription(),
+                activity.getActivityType().name(),
+                activity.getCreatedAt()
+        );
     }
 }

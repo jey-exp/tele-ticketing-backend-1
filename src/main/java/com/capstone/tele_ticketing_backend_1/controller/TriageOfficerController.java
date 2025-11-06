@@ -1,9 +1,6 @@
 package com.capstone.tele_ticketing_backend_1.controller;
 
-import com.capstone.tele_ticketing_backend_1.dto.AiTriageSuggestionDto;
-import com.capstone.tele_ticketing_backend_1.dto.TriageTicketRequestDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
+import com.capstone.tele_ticketing_backend_1.dto.*;
 import com.capstone.tele_ticketing_backend_1.service.TriageOfficerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +35,10 @@ public class TriageOfficerController {
     @GetMapping("/tickets/ai-suggestions")
     public ResponseEntity<List<AiTriageSuggestionDto>> getAiSuggestions() {
         return ResponseEntity.ok(triageOfficerService.getAiTriageSuggestions());
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationDto>> getNotifications() {
+        return ResponseEntity.ok(triageOfficerService.getNotifications());
     }
 }
