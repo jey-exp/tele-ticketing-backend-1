@@ -4,7 +4,7 @@ package com.capstone.tele_ticketing_backend_1.security.config;
 import com.capstone.tele_ticketing_backend_1.security.jwt.AuthEntryPointJwt;
 import com.capstone.tele_ticketing_backend_1.security.jwt.AuthTokenFilter;
 import com.capstone.tele_ticketing_backend_1.security.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,17 +27,11 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity 
+@RequiredArgsConstructor
 public class WebSecurityConfig { 
-	@Autowired
-	private UserDetailsServiceImpl userDetailsService;
-
-	@Autowired
-	private AuthEntryPointJwt unauthorizedHandler;
-
-	@Bean
-	public AuthTokenFilter authenticationJwtTokenFilter() {
-		return new AuthTokenFilter();
-	}
+	private final UserDetailsServiceImpl userDetailsService;
+	private final AuthEntryPointJwt unauthorizedHandler;
+	private final AuthTokenFilter authenticationJwtTokenFilter;
 
 
 
@@ -92,7 +86,7 @@ public class WebSecurityConfig {
 						.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 						.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 						.authenticationProvider(authenticationProvider())
-						.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+						.addFilterBefore(authenticationJwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

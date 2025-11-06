@@ -1,19 +1,22 @@
 package com.capstone.tele_ticketing_backend_1.service;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.AppUser;
 import com.capstone.tele_ticketing_backend_1.entities.ERole;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
     @Transactional(readOnly = true)
     public List<UserSummaryDto> getAllCustomers() {

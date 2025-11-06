@@ -1,6 +1,14 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.AverageResolutionTimeDto;
 import com.capstone.tele_ticketing_backend_1.dto.SatisfactionScoreDto;
 import com.capstone.tele_ticketing_backend_1.dto.TimeSeriesDataPointDto;
@@ -8,24 +16,16 @@ import com.capstone.tele_ticketing_backend_1.projections.SatisfactionScoreProjec
 import com.capstone.tele_ticketing_backend_1.projections.TicketVolumeProjection;
 import com.capstone.tele_ticketing_backend_1.repo.FeedbackRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReportingService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private FeedbackRepo feedbackRepo;
+    private final TicketRepo ticketRepo;
+    private final FeedbackRepo feedbackRepo;
 
     // Defines the time range for our reports (e.g., last 30 days)
     private static final LocalDateTime REPORTING_START_DATE = LocalDateTime.now().minusDays(30);

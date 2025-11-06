@@ -1,11 +1,10 @@
 package com.capstone.tele_ticketing_backend_1.controller;
-
 import com.capstone.tele_ticketing_backend_1.dto.ActivityLogDto;
 import com.capstone.tele_ticketing_backend_1.entities.AppUser;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 import com.capstone.tele_ticketing_backend_1.service.ActivityLogService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,13 +18,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/tickets/{ticketId}/logs")
 @PreAuthorize("isAuthenticated()")
+@RequiredArgsConstructor // Dr. X's Addition: Generates the constructor for us.
 public class ActivityLogController {
 
-    @Autowired
-    private ActivityLogService activityLogService;
-
-    @Autowired
-    private UserRepo userRepo;
+    // Dr. X's Fix: Dependencies are now final and injected via the constructor.
+    private final ActivityLogService activityLogService;
+    private final UserRepo userRepo;
 
     @GetMapping
     public ResponseEntity<List<ActivityLogDto>> getTicketLogs(@PathVariable Long ticketId) {

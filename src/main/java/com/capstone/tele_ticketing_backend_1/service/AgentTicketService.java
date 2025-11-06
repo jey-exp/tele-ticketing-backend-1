@@ -1,44 +1,46 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
-import com.capstone.tele_ticketing_backend_1.dto.*;
-import com.capstone.tele_ticketing_backend_1.entities.*;
-import com.capstone.tele_ticketing_backend_1.exceptions.AuthorizationException;
-import com.capstone.tele_ticketing_backend_1.exceptions.InvalidTicketStatusException;
-import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
-import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
-import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
-import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
-import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.capstone.tele_ticketing_backend_1.repo.FeedbackRepo;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.capstone.tele_ticketing_backend_1.dto.AgentCreateTicketRequestDto;
+import com.capstone.tele_ticketing_backend_1.dto.FeedbackRequestDto;
+import com.capstone.tele_ticketing_backend_1.dto.NotificationDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
+import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
+import com.capstone.tele_ticketing_backend_1.entities.AppUser;
+import com.capstone.tele_ticketing_backend_1.entities.Attachment;
+import com.capstone.tele_ticketing_backend_1.entities.Feedback;
+import com.capstone.tele_ticketing_backend_1.entities.Ticket;
+import com.capstone.tele_ticketing_backend_1.entities.TicketActivity;
+import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
+import com.capstone.tele_ticketing_backend_1.exceptions.AuthorizationException;
+import com.capstone.tele_ticketing_backend_1.exceptions.InvalidTicketStatusException;
+import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
+import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
+import com.capstone.tele_ticketing_backend_1.repo.FeedbackRepo;
+import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
+import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
+import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class AgentTicketService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private TicketService ticketService;
-
-    @Autowired
-    private ActivityLogService activityLogService;
-
-    @Autowired
-    private TicketActivityRepo activityRepo;
-
-    @Autowired
-    private FeedbackRepo feedbackRepo;
+    private final TicketRepo ticketRepo;
+    private final UserRepo userRepo;
+    private final TicketService ticketService;
+    private final ActivityLogService activityLogService;
+    private final TicketActivityRepo activityRepo;
+    private final FeedbackRepo feedbackRepo; 
 
     @Transactional
     public TicketDetailDto createTicketForCustomer(AgentCreateTicketRequestDto dto, String agentUsername) {

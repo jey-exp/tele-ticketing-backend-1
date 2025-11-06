@@ -3,7 +3,7 @@ package com.capstone.tele_ticketing_backend_1.controller;
 import com.capstone.tele_ticketing_backend_1.dto.*;
 import com.capstone.tele_ticketing_backend_1.service.AgentTicketService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,10 +15,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/agent")
 @PreAuthorize("hasRole('AGENT')")
+@RequiredArgsConstructor
 public class AgentController {
 
-    @Autowired
-    private AgentTicketService agentTicketService;
+    private final AgentTicketService agentTicketService;
 
     @PostMapping("/tickets")
     // 1. Change the return type here from Ticket to TicketDetailDto

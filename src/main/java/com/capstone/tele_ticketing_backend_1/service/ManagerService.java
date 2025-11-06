@@ -1,22 +1,25 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.TicketFilterDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.Ticket;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ManagerService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
+    private final TicketRepo ticketRepo;
 
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> findTicketsByCriteria(TicketFilterDto filters) {

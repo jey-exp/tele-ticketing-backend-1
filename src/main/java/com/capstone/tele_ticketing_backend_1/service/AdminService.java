@@ -1,5 +1,13 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.ApproveSignupRequestDto;
 import com.capstone.tele_ticketing_backend_1.dto.RoleChangeRequestDto;
 import com.capstone.tele_ticketing_backend_1.dto.UserDetailsDto;
@@ -14,21 +22,16 @@ import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.RoleRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserSignupRequestRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
 
-    @Autowired private UserSignupRequestRepo signupRequestRepo;
-    @Autowired private UserRepo userRepo;
-    @Autowired private RoleRepo roleRepo;
+    private final UserSignupRequestRepo signupRequestRepo;
+    private final UserRepo userRepo;
+    private final RoleRepo roleRepo;
 
     @Transactional(readOnly = true)
     public List<UserSignupRequest> getPendingSignupRequests() {

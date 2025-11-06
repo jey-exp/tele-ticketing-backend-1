@@ -1,43 +1,45 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.ai.TriageAssistant;
-import com.capstone.tele_ticketing_backend_1.dto.*;
-import com.capstone.tele_ticketing_backend_1.entities.*;
+import com.capstone.tele_ticketing_backend_1.dto.AiTriageSuggestionDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
+import com.capstone.tele_ticketing_backend_1.dto.TriageSuggestion;
+import com.capstone.tele_ticketing_backend_1.dto.TriageTicketRequestDto;
+import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
+import com.capstone.tele_ticketing_backend_1.entities.AppUser;
+import com.capstone.tele_ticketing_backend_1.entities.ERole;
+import com.capstone.tele_ticketing_backend_1.entities.Ticket;
+import com.capstone.tele_ticketing_backend_1.entities.TicketPriority;
+import com.capstone.tele_ticketing_backend_1.entities.TicketSeverity;
+import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
 import com.capstone.tele_ticketing_backend_1.exceptions.InvalidTicketStatusException;
 import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import com.capstone.tele_ticketing_backend_1.service.ActivityLogService;
-import com.capstone.tele_ticketing_backend_1.service.TicketService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TriageOfficerService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private TicketService ticketService;
-
-    @Autowired
-    private ActivityLogService activityLogService;
-
-    @Autowired
-    private TriageAssistant triageAssistant;
+    private final TicketRepo ticketRepo;
+    private final UserRepo userRepo;
+    private final TicketService ticketService;
+    private final ActivityLogService activityLogService;
+    private final TriageAssistant triageAssistant;
 
     // Defines which statuses are considered "pending" for a Triage Officer.
     private static final List<TicketStatus> PENDING_STATUSES = List.of(

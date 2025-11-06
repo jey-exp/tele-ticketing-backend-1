@@ -1,6 +1,12 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
 import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.Team;
@@ -8,21 +14,15 @@ import com.capstone.tele_ticketing_backend_1.entities.Ticket;
 import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TeamRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TicketService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private TeamRepo teamRepo;
+    private final TicketRepo ticketRepo;
+    private final TeamRepo teamRepo;
 
     @Transactional(readOnly = true)
     public TicketDetailDto getTicketById(Long ticketId) {

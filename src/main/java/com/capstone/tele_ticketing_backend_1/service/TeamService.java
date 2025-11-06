@@ -1,21 +1,24 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.TeamSummaryDto;
 import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.Team;
 import com.capstone.tele_ticketing_backend_1.repo.TeamRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TeamService {
 
-    @Autowired
-    private TeamRepo teamRepo;
+    private final TeamRepo teamRepo;
 
     @Transactional(readOnly = true)
     // Dr. X's Fix: Change the return type to a list of DTOs.

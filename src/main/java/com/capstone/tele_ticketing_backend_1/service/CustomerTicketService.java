@@ -8,7 +8,7 @@ import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
 import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,22 +18,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerTicketService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private TicketService ticketService;
-
-    @Autowired
-    private ActivityLogService activityLogService;
-
-    @Autowired
-    private TicketActivityRepo activityRepo;
+    private final TicketRepo ticketRepo;
+    private final UserRepo userRepo;
+    private final TicketService ticketService;
+    private final ActivityLogService activityLogService;
+    private final TicketActivityRepo activityRepo;
 
 
     @Transactional

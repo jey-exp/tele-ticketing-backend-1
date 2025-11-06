@@ -7,7 +7,7 @@ import com.capstone.tele_ticketing_backend_1.exceptions.AuthorizationException;
 import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ActivityLogService {
 
-    @Autowired
-    private TicketActivityRepo activityRepo;
-
-    @Autowired
-    private TicketRepo ticketRepo;
+    private final TicketActivityRepo activityRepo;
+    private final TicketRepo ticketRepo;
 
     /**
      * Core method to create a new log entry. This will be called by other services.

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
 import com.capstone.tele_ticketing_backend_1.service.TicketService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 // Dr. X's Note: Any authenticated user can view a ticket's details.
 // We can add more specific "ownership" security later if needed.
 @PreAuthorize("isAuthenticated()")
+@RequiredArgsConstructor
 public class TicketController {
 
-    @Autowired
-    private TicketService ticketService;
+    private final TicketService ticketService;
 
     @GetMapping("/{id}")
     public ResponseEntity<TicketDetailDto> getTicketById(@PathVariable Long id) {

@@ -6,7 +6,7 @@ import com.capstone.tele_ticketing_backend_1.dto.*;
 import com.capstone.tele_ticketing_backend_1.entities.Team;
 import com.capstone.tele_ticketing_backend_1.service.TeamLeadService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,10 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/team-lead")
 @PreAuthorize("hasRole('TEAM_LEAD')")
+@RequiredArgsConstructor
 public class TeamLeadController {
 
-    @Autowired
-    private TeamLeadService teamLeadService;
+    private final TeamLeadService teamLeadService;
 
     @GetMapping("/tickets/active")
     public ResponseEntity<List<TicketSummaryDto>> getActiveTeamTickets() {

@@ -1,9 +1,30 @@
 package com.capstone.tele_ticketing_backend_1.controller;
 
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.capstone.tele_ticketing_backend_1.dto.Coordinates;
 import com.capstone.tele_ticketing_backend_1.dto.InternalSignupRequestDto;
-import com.capstone.tele_ticketing_backend_1.entities.*;
+import com.capstone.tele_ticketing_backend_1.entities.AppUser;
+import com.capstone.tele_ticketing_backend_1.entities.ERole;
+import com.capstone.tele_ticketing_backend_1.entities.Role;
+import com.capstone.tele_ticketing_backend_1.entities.UserSignupRequest;
 import com.capstone.tele_ticketing_backend_1.exceptions.RoleNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserAlreadyExistsException;
 import com.capstone.tele_ticketing_backend_1.repo.RoleRepo;
@@ -16,47 +37,23 @@ import com.capstone.tele_ticketing_backend_1.security.payload.response.JwtRespon
 import com.capstone.tele_ticketing_backend_1.security.payload.response.MessageResponse;
 import com.capstone.tele_ticketing_backend_1.security.service.UserDetailsImpl;
 import com.capstone.tele_ticketing_backend_1.service.GeocodingService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "http://localhost:8080", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-	@Autowired
-	AuthenticationManager authenticationManager;
-
-	@Autowired
-	UserRepo userRepository;
-
-	@Autowired
-	RoleRepo roleRepository;
-
-	@Autowired
-	PasswordEncoder encoder;
-
-	@Autowired
-	JwtUtils jwtUtils;
-
-	@Autowired
-	GeocodingService geocodingService;
-
-	@Autowired
-	UserSignupRequestRepo signupRequestRepo;
+	private final AuthenticationManager authenticationManager;
+	private final UserRepo userRepository;
+	private final RoleRepo roleRepository;
+	private final PasswordEncoder encoder;
+	private final JwtUtils jwtUtils;
+	private final GeocodingService geocodingService;
+	private final UserSignupRequestRepo signupRequestRepo;
 
 	@PostMapping("/signin")
 	public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {

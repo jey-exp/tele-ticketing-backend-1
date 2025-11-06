@@ -4,7 +4,7 @@ package com.capstone.tele_ticketing_backend_1.controller;
 import com.capstone.tele_ticketing_backend_1.dto.*;
 import com.capstone.tele_ticketing_backend_1.service.CustomerTicketService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,10 +15,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/customer")
 @CrossOrigin(origins = "*", maxAge = 3600) // Dr. X's Note: Secures all endpoints in this controller.
+@RequiredArgsConstructor
 public class CustomerController {
 
-    @Autowired
-    private CustomerTicketService customerTicketService;
+    private final CustomerTicketService customerTicketService;
 
     @PostMapping("/tickets")
     public ResponseEntity<TicketDetailDto> createTicket(@Valid @RequestBody CreateTicketRequestDto createTicketRequestDto) {

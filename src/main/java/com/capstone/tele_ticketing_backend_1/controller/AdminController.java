@@ -7,7 +7,7 @@ import com.capstone.tele_ticketing_backend_1.entities.AppUser;
 import com.capstone.tele_ticketing_backend_1.entities.UserSignupRequest;
 import com.capstone.tele_ticketing_backend_1.service.AdminService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @PreAuthorize("hasRole('ADMIN')") // Dr. X's Fix: Changed from 'MANAGER' to 'ADMIN'
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+    private final AdminService adminService;
 
     // All methods inside this controller are now protected for ADMIN only.
     @GetMapping("/signup-requests")

@@ -1,5 +1,11 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.capstone.tele_ticketing_backend_1.dto.EngineerUpdateDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
@@ -13,23 +19,16 @@ import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class EngineerService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    private TicketService ticketService;
+    private final TicketRepo ticketRepo;
+    private final UserRepo userRepo;
+    private final TicketService ticketService;
 
     public List<TicketSummaryDto> getAssignedTickets(String username) {
         AppUser engineer = userRepo.findByUsername(username)

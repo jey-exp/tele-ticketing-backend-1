@@ -8,23 +8,19 @@ import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
 import com.capstone.tele_ticketing_backend_1.repo.TicketActivityRepo;
 import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DashboardService {
 
-    @Autowired
-    private TicketRepo ticketRepo;
-
-    @Autowired
-    private TicketActivityRepo activityRepo;
-
-    @Autowired
-    private UserRepo userRepo;
+    private final TicketRepo ticketRepo;
+    private final TicketActivityRepo activityRepo;
+    private final UserRepo userRepo;
 
     @Transactional(readOnly = true)
     public DashboardStatsDto getDashboardStats(String username) {

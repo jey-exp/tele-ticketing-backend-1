@@ -2,26 +2,45 @@ package com.capstone.tele_ticketing_backend_1.service;
 
 
 
-import com.capstone.tele_ticketing_backend_1.dto.*;
-import com.capstone.tele_ticketing_backend_1.entities.*;
-import com.capstone.tele_ticketing_backend_1.exceptions.*;
-import com.capstone.tele_ticketing_backend_1.repo.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.capstone.tele_ticketing_backend_1.dto.ReassignTicketDto;
+import com.capstone.tele_ticketing_backend_1.dto.TeamDetailDto;
+import com.capstone.tele_ticketing_backend_1.dto.TeamMemberUpdateRequestDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
+import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
+import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
+import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
+import com.capstone.tele_ticketing_backend_1.entities.AppUser;
+import com.capstone.tele_ticketing_backend_1.entities.Team;
+import com.capstone.tele_ticketing_backend_1.entities.Ticket;
+import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
+import com.capstone.tele_ticketing_backend_1.exceptions.AuthorizationException;
+import com.capstone.tele_ticketing_backend_1.exceptions.BadRequestException;
+import com.capstone.tele_ticketing_backend_1.exceptions.ResourceNotFoundException;
+import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
+import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
+import com.capstone.tele_ticketing_backend_1.repo.TeamRepo;
+import com.capstone.tele_ticketing_backend_1.repo.TicketRepo;
+import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TeamLeadService {
 
-    @Autowired private UserRepo userRepo;
-    @Autowired private TeamRepo teamRepo;
-    @Autowired private TicketRepo ticketRepo;
-    @Autowired private TicketService ticketService;
-    @Autowired private ActivityLogService activityLogService;
+    private final UserRepo userRepo;
+    private final TeamRepo teamRepo;
+    private final TicketRepo ticketRepo;
+    private final TicketService ticketService;
+    private final ActivityLogService activityLogService;
 
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> getActiveTeamTickets(String teamLeadUsername) {
