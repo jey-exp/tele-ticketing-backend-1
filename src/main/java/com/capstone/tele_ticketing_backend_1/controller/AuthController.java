@@ -2,11 +2,13 @@ package com.capstone.tele_ticketing_backend_1.controller;
 
 
 import com.capstone.tele_ticketing_backend_1.dto.Coordinates;
+import com.capstone.tele_ticketing_backend_1.dto.InternalSignupRequestDto;
 import com.capstone.tele_ticketing_backend_1.entities.*;
 import com.capstone.tele_ticketing_backend_1.exceptions.RoleNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserAlreadyExistsException;
 import com.capstone.tele_ticketing_backend_1.repo.RoleRepo;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
+import com.capstone.tele_ticketing_backend_1.repo.UserSignupRequestRepo;
 import com.capstone.tele_ticketing_backend_1.security.jwt.JwtUtils;
 import com.capstone.tele_ticketing_backend_1.security.payload.request.LoginRequest;
 import com.capstone.tele_ticketing_backend_1.security.payload.request.SignupRequest;
@@ -52,6 +54,9 @@ public class AuthController {
 
 	@Autowired
 	GeocodingService geocodingService;
+
+	@Autowired
+	UserSignupRequestRepo signupRequestRepo;
 
 	@PostMapping("/signin")
 	public ResponseEntity<JwtResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -172,6 +177,12 @@ public class AuthController {
 					roles.add(foundRole);
 					break;
 				}
+				case "admin": {
+					Role foundRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+							.orElseThrow(() -> new RoleNotFoundException("Error: Role 'ADMIN' is not found."));
+					roles.add(foundRole);
+					break;
+				}
 				default:
 					throw new RoleNotFoundException("Error: Invalid role specified: " + role);
 			}
@@ -181,5 +192,20 @@ public class AuthController {
 		userRepository.save(user);
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+	}
+	@PostMapping("/internal-signup")
+	public ResponseEntity<MessageResponse> registerInternalUser(@Valid @RequestBody InternalSignupRequestDto signupRequest) {
+		if (userRepository.existsByUsername(signupRequest.getUsername())) {
+			throw new UserAlreadyExistsException("Error: Username is already taken!");
+		}
+		// Dr. X's Note: We MUST hash the password before saving the request.
+		UserSignupRequest request = new UserSignupRequest(
+				signupRequest.getUsername(),
+				signupRequest.getFullname(),
+				encoder.encode(signupRequest.getPassword()), // Hash the password
+				signupRequest.getPreferredRole()
+		);
+		signupRequestRepo.save(request);
+		return ResponseEntity.ok(new MessageResponse("Signup request submitted successfully. Pending admin approval."));
 	}
 }

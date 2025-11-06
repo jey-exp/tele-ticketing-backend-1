@@ -21,4 +21,6 @@ public interface UserRepo extends JpaRepository<AppUser, Long> {
     List<AppUser> findByTeamIsNullAndRoles_NameIn(List<ERole> roles);
     @Query("SELECT DISTINCT u.city FROM AppUser u WHERE u.city IS NOT NULL AND u.city != '' ORDER BY u.city")
     List<String> findDistinctCities();
+
+    List<AppUser> findAllByRoles_NameNot(ERole roleName);
 }

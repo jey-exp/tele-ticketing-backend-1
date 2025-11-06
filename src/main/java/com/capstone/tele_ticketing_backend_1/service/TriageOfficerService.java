@@ -1,14 +1,9 @@
 package com.capstone.tele_ticketing_backend_1.service;
 
 
-import com.capstone.tele_ticketing_backend_1.dto.TriageTicketRequestDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
-import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
-import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
-import com.capstone.tele_ticketing_backend_1.entities.AppUser;
-import com.capstone.tele_ticketing_backend_1.entities.Ticket;
-import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
-import com.capstone.tele_ticketing_backend_1.entities.TicketSeverity;
+import com.capstone.tele_ticketing_backend_1.ai.TriageAssistant;
+import com.capstone.tele_ticketing_backend_1.dto.*;
+import com.capstone.tele_ticketing_backend_1.entities.*;
 import com.capstone.tele_ticketing_backend_1.exceptions.InvalidTicketStatusException;
 import com.capstone.tele_ticketing_backend_1.exceptions.TicketNotFoundException;
 import com.capstone.tele_ticketing_backend_1.exceptions.UserNotFoundException;
@@ -20,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +35,9 @@ public class TriageOfficerService {
 
     @Autowired
     private ActivityLogService activityLogService;
+
+    @Autowired
+    private TriageAssistant triageAssistant;
 
     // Defines which statuses are considered "pending" for a Triage Officer.
     private static final List<TicketStatus> PENDING_STATUSES = List.of(
@@ -108,5 +107,64 @@ public class TriageOfficerService {
             case TRIVIAL -> 2;
             default -> 24; // Default fallback
         };
+    }
+
+    @Transactional(readOnly = true)
+    public List<AiTriageSuggestionDto> getAiTriageSuggestions() {
+        List<Ticket> pendingTickets = ticketRepo.findAllByStatusIn(PENDING_STATUSES);
+        List<AiTriageSuggestionDto> suggestions = new ArrayList<>();
+
+        for (Ticket ticket : pendingTickets) {
+            String prompt = String.format(
+                    "Analyze this ticket:\nTitle: %s\nDescription: %s\nCategory: %s",
+                    ticket.getTitle(), ticket.getDescription(), ticket.getCategory()
+            );
+
+            try {
+                // Call the AI
+                TriageSuggestion suggestion = triageAssistant.suggestTriage(prompt);
+
+                // Map the AI's string response to our DTO
+                AiTriageSuggestionDto dto = new AiTriageSuggestionDto();
+                dto.setTicketId(ticket.getId());
+                dto.setTicketUid(ticket.getTicketUid());
+                dto.setTitle(ticket.getTitle());
+
+                // Safely map strings to enums, handling potential AI errors
+                dto.setSuggestedPriority(safeValueOf(TicketPriority.class, suggestion.getSuggestedPriority(), TicketPriority.LOW));
+                dto.setSuggestedSeverity(safeValueOf(TicketSeverity.class, suggestion.getSuggestedSeverity(), TicketSeverity.TRIVIAL));
+                dto.setSuggestedRole(safeValueOf(ERole.class, suggestion.getSuggestedRole(), ERole.ROLE_L1_ENGINEER));
+
+                suggestions.add(dto);
+
+            } catch (Exception e) {
+                // We can add a "failed" suggestion if we want
+                suggestions.add(createFailedSuggestionDto(ticket, e.getMessage()));
+            }
+        }
+        return suggestions;
+    }
+
+    // A private helper to safely convert AI string output to enums
+    private <T extends Enum<T>> T safeValueOf(Class<T> enumType, String name, T defaultValue) {
+        if (name == null) return defaultValue;
+        try {
+            return T.valueOf(enumType, name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return defaultValue;
+        }
+    }
+
+    // A private helper to create a DTO that signals failure
+    private AiTriageSuggestionDto createFailedSuggestionDto(Ticket ticket, String error) {
+        AiTriageSuggestionDto dto = new AiTriageSuggestionDto();
+        dto.setTicketId(ticket.getId());
+        dto.setTicketUid(ticket.getTicketUid());
+        dto.setTitle(ticket.getTitle() + " (AI FAILED: " + error + ")");
+        // We set defaults so the UI doesn't crash
+        dto.setSuggestedPriority(TicketPriority.LOW);
+        dto.setSuggestedSeverity(TicketSeverity.TRIVIAL);
+        dto.setSuggestedRole(ERole.ROLE_L1_ENGINEER);
+        return dto;
     }
 }

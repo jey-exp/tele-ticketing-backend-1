@@ -1,5 +1,6 @@
 package com.capstone.tele_ticketing_backend_1.controller;
 
+import com.capstone.tele_ticketing_backend_1.dto.AiTriageSuggestionDto;
 import com.capstone.tele_ticketing_backend_1.dto.TriageTicketRequestDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
@@ -32,5 +33,10 @@ public class TriageOfficerController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         TicketDetailDto triagedTicket = triageOfficerService.triageTicket(id, dto, username);
         return ResponseEntity.ok(triagedTicket);
+    }
+
+    @GetMapping("/tickets/ai-suggestions")
+    public ResponseEntity<List<AiTriageSuggestionDto>> getAiSuggestions() {
+        return ResponseEntity.ok(triageOfficerService.getAiTriageSuggestions());
     }
 }

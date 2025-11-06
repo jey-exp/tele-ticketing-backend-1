@@ -2,6 +2,7 @@ package com.capstone.tele_ticketing_backend_1.config;
 
 import com.capstone.tele_ticketing_backend_1.ai.ChatAssistant;
 import com.capstone.tele_ticketing_backend_1.ai.TicketingTools;
+import com.capstone.tele_ticketing_backend_1.ai.TriageAssistant;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
@@ -53,6 +54,14 @@ public class AiConfig {
                         .id(chatId)
                         .build())
                 .tools(ticketingTools)
+                .build();
+    }
+    @Bean
+    public TriageAssistant triageAssistant(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(TriageAssistant.class)
+                .chatLanguageModel(chatLanguageModel)
+                // This assistant is stateless and doesn't need memory or tools,
+                // it just needs to return a structured POJO.
                 .build();
     }
 }
