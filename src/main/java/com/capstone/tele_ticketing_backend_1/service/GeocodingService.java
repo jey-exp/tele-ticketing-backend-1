@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
+@SuppressWarnings("java:S1172")
 public class GeocodingService {
 
     /**

@@ -3,7 +3,6 @@ package com.capstone.tele_ticketing_backend_1.security.jwt;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +36,7 @@ public class JwtUtils {
         // 2. Convert them into a simple list of strings (e.g., ["ROLE_CUSTOMER"]).
         List<String> roles = userPrincipal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .toList();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))

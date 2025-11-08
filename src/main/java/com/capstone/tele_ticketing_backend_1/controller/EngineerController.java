@@ -4,7 +4,7 @@ import com.capstone.tele_ticketing_backend_1.dto.TicketDetailDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
 import com.capstone.tele_ticketing_backend_1.service.EngineerService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/engineer")
 @PreAuthorize("hasAnyRole('L1_ENGINEER', 'NOC_ENGINEER', 'FIELD_ENGINEER')")
+@RequiredArgsConstructor
 public class EngineerController {
 
-    @Autowired
-    private EngineerService engineerService;
+    private final EngineerService engineerService;
 
     @GetMapping("/tickets/assigned")
     public ResponseEntity<List<TicketSummaryDto>> getAssignedTickets() {

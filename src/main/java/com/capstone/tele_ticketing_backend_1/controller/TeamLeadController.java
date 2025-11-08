@@ -3,7 +3,6 @@ package com.capstone.tele_ticketing_backend_1.controller;
 
 
 import com.capstone.tele_ticketing_backend_1.dto.*;
-import com.capstone.tele_ticketing_backend_1.entities.Team;
 import com.capstone.tele_ticketing_backend_1.service.TeamLeadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

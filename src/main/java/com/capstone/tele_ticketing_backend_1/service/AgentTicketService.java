@@ -3,7 +3,6 @@ package com.capstone.tele_ticketing_backend_1.service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,19 +32,24 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+
 public class AgentTicketService {
+
+    private final static String noAgent = "Agent not found";
 
     private final TicketRepo ticketRepo;
     private final UserRepo userRepo;
     private final TicketService ticketService;
     private final ActivityLogService activityLogService;
     private final TicketActivityRepo activityRepo;
-    private final FeedbackRepo feedbackRepo; 
+    private final FeedbackRepo feedbackRepo;
+
+
 
     @Transactional
     public TicketDetailDto createTicketForCustomer(AgentCreateTicketRequestDto dto, String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         AppUser customer = userRepo.findByUsername(dto.getCustomerUsername())
                 .orElseThrow(() -> new UserNotFoundException("Customer not found: " + dto.getCustomerUsername()));
@@ -78,7 +82,7 @@ public class AgentTicketService {
 
     public List<TicketSummaryDto> getAgentCreatedTickets(String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         List<TicketStatus> activeStatuses = Arrays.asList(
                 TicketStatus.CREATED,
@@ -95,13 +99,13 @@ public class AgentTicketService {
 
         return tickets.stream()
                 .map(ticket -> new TicketSummaryDto(ticket.getId(), ticket.getTicketUid(), ticket.getTitle(), ticket.getStatus(), ticket.getCreatedAt()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> getAgentActiveTickets(String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         List<TicketStatus> activeStatuses = List.of(
                 TicketStatus.CREATED, TicketStatus.ASSIGNED,
@@ -112,14 +116,14 @@ public class AgentTicketService {
 
         return tickets.stream()
                 .map(ticket -> new TicketSummaryDto(ticket.getId(), ticket.getTicketUid(), ticket.getTitle(), ticket.getStatus(), ticket.getCreatedAt()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Dr. X's Addition: Method to get all notifications relevant to the agent.
     @Transactional(readOnly = true)
     public List<NotificationDto> getNotifications(String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         List<TicketActivity> activities = activityRepo.findAllByTicket_CreatedByAndInternalOnlyFalseOrderByCreatedAtDesc(agent);
 
@@ -132,12 +136,12 @@ public class AgentTicketService {
                         activity.getActivityType().name(),
                         activity.getCreatedAt()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
     @Transactional
     public TicketDetailDto addFeedbackForCustomer(Long ticketId, FeedbackRequestDto dto, String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         Ticket ticket = ticketRepo.findById(ticketId)
                 .orElseThrow(() -> new TicketNotFoundException("Ticket not found with id: " + ticketId));
@@ -184,12 +188,12 @@ public class AgentTicketService {
     @Transactional(readOnly = true)
     public List<TicketSummaryDto> getAgentFeedbackPendingTickets(String agentUsername) {
         AppUser agent = userRepo.findByUsername(agentUsername)
-                .orElseThrow(() -> new UserNotFoundException("Agent not found: " + agentUsername));
+                .orElseThrow(() -> new UserNotFoundException(noAgent + agentUsername));
 
         List<Ticket> tickets = ticketRepo.findAllByCreatedByAndStatus(agent, TicketStatus.FIXED);
 
         return tickets.stream()
                 .map(ticket -> new TicketSummaryDto(ticket.getId(), ticket.getTicketUid(), ticket.getTitle(), ticket.getStatus(), ticket.getCreatedAt()))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

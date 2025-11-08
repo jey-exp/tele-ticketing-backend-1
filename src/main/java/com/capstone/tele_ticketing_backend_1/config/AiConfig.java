@@ -3,6 +3,7 @@ package com.capstone.tele_ticketing_backend_1.config;
 import com.capstone.tele_ticketing_backend_1.ai.ChatAssistant;
 import com.capstone.tele_ticketing_backend_1.ai.TicketingTools;
 import com.capstone.tele_ticketing_backend_1.ai.TriageAssistant;
+import com.capstone.tele_ticketing_backend_1.exceptions.ApiKeyNotFoundException;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
@@ -27,7 +28,7 @@ public class AiConfig {
     @Bean
     public ChatLanguageModel chatLanguageModel() {
         if (googleApiKey == null || googleApiKey.trim().isEmpty()) {
-            throw new RuntimeException(
+            throw new ApiKeyNotFoundException(
                     "Error: google.api.key is not set in application.properties. " +
                             "Please add it to your configuration."
             );

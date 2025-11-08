@@ -1,6 +1,5 @@
 package com.capstone.tele_ticketing_backend_1.entities;
 
-import com.capstone.tele_ticketing_backend_1.entities.ActivityType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;

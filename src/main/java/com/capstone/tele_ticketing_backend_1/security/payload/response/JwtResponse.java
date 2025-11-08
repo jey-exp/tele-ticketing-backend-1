@@ -3,7 +3,6 @@ package com.capstone.tele_ticketing_backend_1.security.payload.response;
 import lombok.*;
 import lombok.ToString.Exclude;
 
-import java.util.List;
 
 @Getter
 @Setter

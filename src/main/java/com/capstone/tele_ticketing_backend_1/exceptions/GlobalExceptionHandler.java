@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
         // Dr. X's Note: A world-class API returns a structured error response
         // that tells the frontend exactly which fields are wrong.
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
@@ -92,6 +92,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<MessageResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        MessageResponse messageResponse = new MessageResponse(ex.getMessage());
+        return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ApiKeyNotFoundException.class)
+    public ResponseEntity<MessageResponse> handleApiKeyNotFoundException(ApiKeyNotFoundException ex, WebRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
         MessageResponse messageResponse = new MessageResponse(ex.getMessage());
         return new ResponseEntity<>(messageResponse, HttpStatus.BAD_REQUEST);

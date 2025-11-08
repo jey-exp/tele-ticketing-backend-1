@@ -28,8 +28,9 @@ public class TeamService {
         log.info("Fetching all teams");
         List<TeamSummaryDto> teams = teamRepo.findAll().stream()
                 .map(this::mapTeamToSummaryDto)
-                .collect(Collectors.toList());
-        log.debug("Found {} teams", teams.size());
+                .toList();
+        log.debug("Found {} teams", teams.size())
+        ;
         return teams;
     }
 

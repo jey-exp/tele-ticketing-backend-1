@@ -55,7 +55,9 @@ public class WebSecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	public final static String[] PUBLIC_REQUEST_MATCHERS = { "/api/test/all","/api/v1/auth/**", "/api-docs/**", "/swagger-ui/**","/v3/api-docs/**" };
+	protected final static String[] PUBLIC_REQUEST_MATCHERS = { "/api/test/all","/api/v1/auth/**", "/api-docs/**", "/swagger-ui/**","/v3/api-docs/**" };
+
+	public final static String managerRole = "MANAGER";
 
 	// In your SecurityConfig class
 	@Bean
@@ -74,9 +76,9 @@ public class WebSecurityConfig {
 						.requestMatchers("/api/v1/users/customers").hasRole("AGENT")
 
 						.requestMatchers("/api/v1/team-lead/**").hasRole("TEAM_LEAD")
-						.requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
-						.requestMatchers("/api/v1/teams/**").hasRole("MANAGER")
-						.requestMatchers("/api/v1/users/cities").hasRole("MANAGER")
+						.requestMatchers("/api/v1/manager/**").hasRole(managerRole)
+						.requestMatchers("/api/v1/teams/**").hasRole(managerRole)
+						.requestMatchers("/api/v1/users/cities").hasRole(managerRole)
 						.requestMatchers("/api/v1/reports/**").hasRole("CXO")
 						.requestMatchers("/api/v1/ai/**").hasRole("CUSTOMER")
 						.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

@@ -78,7 +78,7 @@ public class AgentDashboardService {
                             activity.getTicket().getTitle(),
                             activity.getCreatedAt()
                     ))
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("Found {} recent activities for agent: {}", activities.size(), agentUsername);
             return activities;

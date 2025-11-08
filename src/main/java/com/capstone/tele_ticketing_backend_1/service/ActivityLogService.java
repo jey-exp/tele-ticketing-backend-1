@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("java:S1172")
 @RequiredArgsConstructor
 @Slf4j
 public class ActivityLogService {
@@ -63,7 +63,7 @@ public class ActivityLogService {
             activities = activityRepo.findByTicketIdAndInternalOnlyFalseOrderByCreatedAtDesc(ticketId);
         }
 
-        return activities.stream().map(this::mapToDto).collect(Collectors.toList());
+        return activities.stream().map(this::mapToDto).toList();
     }
 
     private boolean canUserViewInternalLogs(AppUser user, Ticket ticket) {

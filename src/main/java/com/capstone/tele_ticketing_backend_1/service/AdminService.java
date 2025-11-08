@@ -3,7 +3,6 @@ package com.capstone.tele_ticketing_backend_1.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,7 +93,7 @@ public class AdminService {
         List<AppUser> users = userRepo.findAllByRoles_NameNot(ERole.ROLE_CUSTOMER);
         return users.stream()
                 .map(this::mapUserToDetailsDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Role findRole(String roleName) {

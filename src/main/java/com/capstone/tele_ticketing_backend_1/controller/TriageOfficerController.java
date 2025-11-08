@@ -3,7 +3,7 @@ package com.capstone.tele_ticketing_backend_1.controller;
 import com.capstone.tele_ticketing_backend_1.dto.*;
 import com.capstone.tele_ticketing_backend_1.service.TriageOfficerService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/triage")
 @PreAuthorize("hasRole('TRIAGE_OFFICER')")
+@RequiredArgsConstructor
 public class TriageOfficerController {
 
-    @Autowired
-    private TriageOfficerService triageOfficerService;
+    private final TriageOfficerService triageOfficerService;
 
     @GetMapping("/tickets/pending")
     public ResponseEntity<List<TicketSummaryDto>> getPendingTickets() {

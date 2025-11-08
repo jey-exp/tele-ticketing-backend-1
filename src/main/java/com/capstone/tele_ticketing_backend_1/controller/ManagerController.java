@@ -5,7 +5,7 @@ import com.capstone.tele_ticketing_backend_1.dto.TicketFilterDto;
 import com.capstone.tele_ticketing_backend_1.dto.TicketSummaryDto;
 import com.capstone.tele_ticketing_backend_1.entities.TicketStatus;
 import com.capstone.tele_ticketing_backend_1.service.ManagerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +18,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/manager")
 @PreAuthorize("hasRole('MANAGER')")
+@RequiredArgsConstructor
 public class ManagerController {
 
-    @Autowired
-    private ManagerService managerService;
+    private final ManagerService managerService;
 
     @GetMapping("/tickets")
     public ResponseEntity<List<TicketSummaryDto>> getAllTickets(

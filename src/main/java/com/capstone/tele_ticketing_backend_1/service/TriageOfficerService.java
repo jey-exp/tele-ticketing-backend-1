@@ -46,7 +46,7 @@ public class TriageOfficerService {
         List<Ticket> tickets = ticketRepo.findAllByStatusIn(PENDING_STATUSES);
         return tickets.stream()
                 .map(ticket -> new TicketSummaryDto(ticket.getId(), ticket.getTicketUid(), ticket.getTitle(), ticket.getStatus(), ticket.getCreatedAt()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -180,7 +180,7 @@ public class TriageOfficerService {
 
         return activities.stream()
                 .map(this::mapActivityToNotificationDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private NotificationDto mapActivityToNotificationDto(TicketActivity activity) {

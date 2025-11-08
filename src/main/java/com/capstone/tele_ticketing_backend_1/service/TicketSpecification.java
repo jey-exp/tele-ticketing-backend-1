@@ -9,6 +9,9 @@ import java.util.List;
 
 public class TicketSpecification {
 
+    private TicketSpecification() {
+    }
+
     public static Specification<Ticket> hasStatusIn(List<TicketStatus> statuses) {
         return (root, query, criteriaBuilder) -> {
             if (statuses == null || statuses.isEmpty()) {

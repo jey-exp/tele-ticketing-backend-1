@@ -2,8 +2,6 @@ package com.capstone.tele_ticketing_backend_1.controller;
 
 
 import com.capstone.tele_ticketing_backend_1.dto.UserSummaryDto;
-import com.capstone.tele_ticketing_backend_1.entities.AppUser;
-import com.capstone.tele_ticketing_backend_1.entities.ERole;
 import com.capstone.tele_ticketing_backend_1.repo.UserRepo;
 import com.capstone.tele_ticketing_backend_1.service.UserService;
 import lombok.RequiredArgsConstructor;

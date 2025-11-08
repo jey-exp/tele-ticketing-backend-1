@@ -5,7 +5,7 @@ package com.capstone.tele_ticketing_backend_1.controller;
 import com.capstone.tele_ticketing_backend_1.dto.DashboardActivityDto;
 import com.capstone.tele_ticketing_backend_1.dto.DashboardStatsDto;
 import com.capstone.tele_ticketing_backend_1.service.AgentDashboardService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,10 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/agent/dashboard")
 @PreAuthorize("hasRole('AGENT')")
+@RequiredArgsConstructor
 public class AgentDashboardController {
 
-    @Autowired
-    private AgentDashboardService agentDashboardService;
+    private final AgentDashboardService agentDashboardService;
 
     @GetMapping("/stats")
     public ResponseEntity<DashboardStatsDto> getStats() {

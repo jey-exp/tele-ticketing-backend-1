@@ -70,7 +70,7 @@ public class AuthController {
 
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
-				.collect(Collectors.toList());
+				.toList();
 
 		log.info("Successful authentication for user: {} with roles: {}", loginRequest.getUsername(), roles);
 		return ResponseEntity.ok(new JwtResponse(jwt,
@@ -83,7 +83,8 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		log.info("User registration attempt for username: {}", signUpRequest.getUsername());
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+		Boolean exists = userRepository.existsByUsername(signUpRequest.getUsername());
+		if (Boolean.TRUE.equals(exists)) {
 			log.warn("Registration failed - username already exists: {}", signUpRequest.getUsername());
 			throw new UserAlreadyExistsException("Error: Username is already taken!");
 		}
@@ -198,9 +199,11 @@ public class AuthController {
 	}
 	@PostMapping("/internal-signup")
 	public ResponseEntity<MessageResponse> registerInternalUser(@Valid @RequestBody InternalSignupRequestDto signupRequest) {
-		if (userRepository.existsByUsername(signupRequest.getUsername())) {
+		Boolean exists = userRepository.existsByUsername(signupRequest.getUsername());
+		if (Boolean.TRUE.equals(exists)) {
 			throw new UserAlreadyExistsException("Error: Username is already taken!");
 		}
+
 		// Dr. X's Note: We MUST hash the password before saving the request.
 		UserSignupRequest request = new UserSignupRequest(
 				signupRequest.getUsername(),

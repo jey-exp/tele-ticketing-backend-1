@@ -1,6 +1,5 @@
 package com.capstone.tele_ticketing_backend_1.service;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +45,7 @@ public class UserService {
     private List<UserSummaryDto> mapUsersToSummaryDto(List<AppUser> users) {
         return users.stream()
                 .map(user -> new UserSummaryDto(user.getId(), user.getUsername(), user.getFullName()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<UserSummaryDto> getUnassignedEngineers() {
